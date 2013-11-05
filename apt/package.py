@@ -1129,6 +1129,16 @@ class Package(object):
         """
         self._pcache._depcache.mark_auto(self._pkg, auto)
 
+    def mark_protected(self, protect=True):
+        """Mark a package protected from dependency resolver changes.
+
+        Setting package protected prevents apt dependency resolver from
+        changing the marked state of the package. If the parameter is ``True``
+        then package is marked protected. The protected state affects Only
+        current DepCache instance.
+        """
+        self._pcache._depcache.mark_protected(self._pkg, protect)
+
     def commit(self, fprogress, iprogress):
         """Commit the changes.
 

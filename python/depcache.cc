@@ -407,6 +407,22 @@ static PyObject *PkgDepCacheMarkAuto(PyObject *Self,PyObject *Args)
    return HandleErrors(Py_None);
 }
 
+static PyObject *PkgDepCacheMarkProtected(PyObject *Self,PyObject *Args)
+{
+   pkgDepCache *depcache = GetCpp<pkgDepCache*>(Self);
+
+   PyObject *PackageObj;
+   char value = 1;
+   if (PyArg_ParseTuple(Args,"O!b",&PyPackage_Type,&PackageObj, &value) == 0)
+      return 0;
+
+   pkgCache::PkgIterator &Pkg = GetCpp<pkgCache::PkgIterator>(PackageObj);
+   depcache->MarkProtected(Pkg,value);
+
+   Py_INCREF(Py_None);
+   return HandleErrors(Py_None);
+}
+
 static PyObject *PkgDepCacheIsUpgradable(PyObject *Self,PyObject *Args)
 {
    pkgDepCache *depcache = GetCpp<pkgDepCache *>(Self);
@@ -621,6 +637,9 @@ static PyMethodDef PkgDepCacheMethods[] =
     "mark_auto(pkg: apt_pkg.Package, auto: bool)\n\n"
     "Mark package as automatically installed (if auto=True),\n"
     "or as not automatically installed (if auto=False)."},
+   {"mark_protected",PkgDepCacheMarkProtected,METH_VARARGS,
+    "mark_protected(pkg: apt_pkg.Package, protect: bool)\n\n"
+    "Mark the package to be protected from dependency resolver state changes."},
    {"set_reinstall",PkgDepCacheSetReInstall,METH_VARARGS,
     "set_reinstall(pkg: apt_pkg.Package, reinstall: bool)\n\n"
     "Set whether the package should be reinstalled (reinstall = True or False)."},
