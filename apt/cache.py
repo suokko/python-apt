@@ -227,18 +227,30 @@ class Cache(object):
     def keys(self):
         return list(self._set)
 
+    def _append_to_list(self, pkglist, pkg):
+        name = pkg.get_fullname(pretty=True)
+        try:
+            pkglist.append(self._weakref[name])
+        except KeyError:
+            package = self._weakref[name] = Package(self, pkg)
+            pkglist.append(package)
+
+    def get_upgradable(self):
+        """ Get the list of packages that can be upgraded """
+        upgradable = []
+        is_upgradable = self._depcache.is_upgradable
+        for pkg in self._cache.packages:
+            if is_upgradable(pkg) and pkg.current_ver is not None:
+                self._append_to_list(upgradable, pkg)
+        return upgradable
+
     def get_changes(self):
         """ Get the marked changes """
         changes = []
         marked_keep = self._depcache.marked_keep
         for pkg in self._cache.packages:
             if not marked_keep(pkg):
-                name = pkg.get_fullname(pretty=True)
-                try:
-                    changes.append(self._weakref[name])
-                except KeyError:
-                    package = self._weakref[name] = Package(self, pkg)
-                    changes.append(package)
+                self._append_to_list(changes, pkg)
         return changes
 
     def upgrade(self, dist_upgrade=False):
